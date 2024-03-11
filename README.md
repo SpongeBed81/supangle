@@ -1,6 +1,4 @@
-<a name="readme-top"></a>
 
-<br />
 <div align="center">
 
   <h1 align="center">Supangle</h1>
