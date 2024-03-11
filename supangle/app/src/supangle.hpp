@@ -6,7 +6,6 @@
 #include <vector>
 #include <cassert>
 
-
 #include "./fs.hpp"
 #include "./timer.hpp"
 
@@ -20,11 +19,14 @@ using namespace v8;
 
 int decreaseLineValueBy = 0;
 
-int getLineCount(const string& str) {
-    int lineCount = 1;  // At least one line if the string is not empty
+int getLineCount(const string &str)
+{
+    int lineCount = 1; // At least one line if the string is not empty
 
-    for (char c : str) {
-        if (c == '\n') {
+    for (char c : str)
+    {
+        if (c == '\n')
+        {
             lineCount++;
         }
     }
@@ -49,8 +51,8 @@ private:
         uv_run(DEFAULT_LOOP, UV_RUN_DEFAULT);
     }
 
-    static bool ExecuteString(Isolate* isolate, Local<String> source, Local<Value> name, bool print_result, bool report_exceptions) {
-
+    static bool ExecuteString(Isolate *isolate, Local<String> source, Local<Value> name, bool print_result, bool report_exceptions)
+    {
 
         HandleScope handle_scope(isolate);
         TryCatch try_catch(isolate);
@@ -58,26 +60,35 @@ private:
         Local<Context> context(isolate->GetCurrentContext());
         Local<Script> script;
 
-        if (!Script::Compile(context, source, &origin).ToLocal(&script)) {
-            if (report_exceptions) {
+        if (!Script::Compile(context, source, &origin).ToLocal(&script))
+        {
+            if (report_exceptions)
+            {
                 ReportException(isolate, &try_catch);
             }
             return false;
-        } else {
+        }
+        else
+        {
             Local<Value> result;
-            if (!script->Run(context).ToLocal(&result)) {
+            if (!script->Run(context).ToLocal(&result))
+            {
                 assert(try_catch.HasCaught());
 
-                if (report_exceptions) {
+                if (report_exceptions)
+                {
                     ReportException(isolate, &try_catch);
                 }
 
                 return false;
-            } else {
+            }
+            else
+            {
                 assert(!try_catch.HasCaught());
-                if (print_result && !result->IsUndefined()) {
+                if (print_result && !result->IsUndefined())
+                {
                     String::Utf8Value str(isolate, result);
-                    const char* cstr = ToCString(str);
+                    const char *cstr = ToCString(str);
                     printf("%s\n", cstr);
                 }
                 return true;
@@ -85,23 +96,25 @@ private:
         }
     }
 
-
-
-    static void Require(const FunctionCallbackInfo<Value>& info) {
-        for (int i = 0; i < info.Length(); i++) {
+    static void Require(const FunctionCallbackInfo<Value> &info)
+    {
+        for (int i = 0; i < info.Length(); i++)
+        {
             HandleScope handle_scope(info.GetIsolate());
             String::Utf8Value file(info.GetIsolate(), info[i]);
-            if (*file == nullptr) {
+            if (*file == nullptr)
+            {
                 info.GetIsolate()->ThrowError("Error loading file");
                 return;
             }
 
-            //to convert String::Utf8Value to const char*
+            // to convert String::Utf8Value to const char*
             string fileContent = Fs::readFile(*file);
 
             Local<String> source = String::NewFromUtf8(info.GetIsolate(), fileContent.c_str(), NewStringType::kNormal).ToLocalChecked();
 
-            if (!ExecuteString(info.GetIsolate(), source, info[i], false, true)) {
+            if (!ExecuteString(info.GetIsolate(), source, info[i], false, true))
+            {
                 info.GetIsolate()->ThrowError("Error executing file");
                 return;
             }
@@ -119,7 +132,8 @@ private:
 
             string interfacesLookup = "";
 
-            for (const auto& file : files) {
+            for (const auto &file : files)
+            {
                 string interfaceContent = Fs::readFile(file.c_str());
 
                 interfacesLookup += interfaceContent + "\n\n";
@@ -128,7 +142,7 @@ private:
             decreaseLineValueBy = getLineCount(interfacesLookup);
 
             string compileThis = interfacesLookup + fileContent;
-            
+
             Local<String> source = v8_str(compileThis.c_str());
 
             ExecuteString(isolate, source, v8_str(filename), true, true);
@@ -168,7 +182,7 @@ public:
     void InitializeProgram(char *filename)
     {
 
-        //I definitely need to clear these lines somehow...
+        // I definitely need to clear these lines somehow...
 
         Isolate::Scope isolate_scope(this->isolate);
 
@@ -180,12 +194,12 @@ public:
 
         global->Set(isolate, "require", FunctionTemplate::New(isolate, Require));
 
-        //console template
+        // console template
         Local<ObjectTemplate> console = ObjectTemplate::New(isolate);
-        
+
         global->Set(isolate, "console", console);
 
-        //process template
+        // process template
         Local<ObjectTemplate> process = ObjectTemplate::New(isolate);
 
         Local<ObjectTemplate> process_stdout = ObjectTemplate::New(isolate);
@@ -202,7 +216,7 @@ public:
 
         global->Set(isolate, "process", process);
 
-        //timeout
+        // timeout
         timer.Initialize(DEFAULT_LOOP);
 
         // currently both can be used to clear timeout and interval ¯\_(ツ)_/¯
