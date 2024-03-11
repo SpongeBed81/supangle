@@ -16,7 +16,7 @@ I am developing this project solely for the purpose of learning C++, and I don't
 ## What is Supangle?
 Supangle is a JavaScript runtime powered by the Google's V8 engine. I am planning to add built-in support for TypeScript, standalone executables, low-level memory access through Supangle's APIs and much more. 
 
-### Installation
+## Installation
 I am not planning to provide executables yet until the project reaches a certain point.
 
 ## Contributing
